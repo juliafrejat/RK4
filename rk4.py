@@ -29,6 +29,7 @@ def rk4(f, x0, y0, xn, h):
 
     # Iteração com n passos
     for i in range(int(n)):
+        
         # Cálculo das constantes ks do método RK4
         k1 = f(x, y_i)
         k2 = f(x + h/2, y_i + k1*h/2)
@@ -59,6 +60,7 @@ def rk4(f, x0, y0, xn, h):
 
     # Cálculo das derivadas em xn
     k1 = f(x, y_i)
+
     # Armazenamento do resultado
     dY = np.vstack([dY, k1])
 
