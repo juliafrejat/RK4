@@ -2,27 +2,45 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 
-"""
 # Discretização
-delta_phi = 2  # graus
-delta_r = 0.0025 # metros
-"""
+delta_phi = 2
+delta_r = 0.005
 
-fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
+def plota_malha(delta_phi, delta_r):
+    fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
-ax.plot(0, np.arange(0.03, 0.11, 0.01))
-ax.plot(np.deg2rad(40), np.arange(0.03, 0.11, 0.01))
-ax.plot(np.arange(0, np.deg2rad(40), 0.01), 0.03)
-ax.plot(np.arange(0, np.deg2rad(40), 0.01), 0.11)
+    # Contorno do material A
+    ax.plot([0]*50, np.linspace(0.03, 0.11), color='k')
+    ax.plot([np.deg2rad(40)]*50, np.linspace(0.03, 0.11), color='k')
+    ax.plot(np.linspace(0, np.deg2rad(40)), [0.03]*50, color='k')
+    ax.plot(np.linspace(0, np.deg2rad(40)), [0.11]*50, color='k',linewidth=1.3)
+    
+    # Contorno do material B
+    ax.plot([0]*50, np.linspace(0.05, 0.08), color='b')
+    ax.plot([np.deg2rad(18)]*50, np.linspace(0.05, 0.08), color='b')
+    ax.plot(np.linspace(0, np.deg2rad(18)), [0.05]*50, color='b')
+    ax.plot(np.linspace(0, np.deg2rad(18)), [0.08]*50, color='b',linewidth=1.3)
 
-ax.set_rmax(0.11)
-ax.set_thetamin(0)
-ax.set_thetamax(40)
+    # Linhas da malha
+    ax.set_rticks(np.arange(0.03, 0.12, delta_r)) 
+    ax.set_thetagrids(np.arange(0, 40, delta_phi))
 
-#ax.set_rticks([0.5, 1, 1.5, 2])  # Less radial ticks
-#ax.set_rlabel_position(-22.5)  # Move radial labels away from plotted line
+    # Limites do gráfico
+    ax.set_thetamin(0)
+    ax.set_thetamax(40)
+    ax.set_rmax(0.11)
 
-ax.grid(True)
+    # Offset
+    ax.set_rmin(0.03)
+    ax.set_rorigin(-0.03)
 
-ax.set_title("A line plot on a polar axis", va='bottom')
-plt.show()
+    # Remover labels 
+    ax.set_xticklabels([])
+    ax.set_yticklabels([])
+    
+    ax.grid(True)
+
+    #ax.set_title("A line plot on a polar axis", va='bottom')
+    plt.show()
+
+plota_malha(delta_phi, delta_r)
