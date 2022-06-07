@@ -1,4 +1,3 @@
-import math
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -7,7 +6,7 @@ delta_phi = 2
 delta_r = 0.005
 
 # Highlight
-pos = 'top_a'
+pos = 'general'
 cor = 'g'
 
 def plota_malha_aux(delta_phi, delta_r, pos, cor):
@@ -45,6 +44,16 @@ def plota_malha_aux(delta_phi, delta_r, pos, cor):
         ax.plot(np.linspace(0, np.deg2rad(40)), [0.11]*50, color=cor, linewidth=4)
         ax.plot(np.deg2rad(0), 0.11, color=cor, markersize=10, marker=".")
         ax.plot(np.deg2rad(40), 0.11, color=cor, markersize=10, marker=".")
+    if pos == 'general':
+        ax.fill_between(np.linspace(np.deg2rad(0+delta_phi), np.deg2rad(40-delta_phi)), 0.03+delta_r, 0.05-delta_r, color = 'b', alpha = 0.7)
+        ax.fill_between(np.linspace(np.deg2rad(18+delta_phi), np.deg2rad(40-delta_phi)), 0.05, 0.08, color = 'b', alpha = 0.7)
+        ax.fill_between(np.linspace(np.deg2rad(0+delta_phi), np.deg2rad(40-delta_phi)), 0.08+delta_r, 0.11-delta_r, color = 'b', alpha = 0.7)
+        ax.fill_between(np.linspace(np.deg2rad(18), np.deg2rad(40-delta_phi)), 0.05-delta_r, 0.05, color = 'b', alpha = 0.7)
+        ax.fill_between(np.linspace(np.deg2rad(18), np.deg2rad(40-delta_phi)), 0.08, 0.08+delta_r, color = 'b', alpha = 0.7)
+    if pos == 'material':
+        ax.fill_between(np.linspace(0, np.deg2rad(40)), 0.03, 0.11, color='g', alpha=0.2, zorder=1)
+        ax.fill_between(np.linspace(0, np.deg2rad(18)), 0.05, 0.08, color='b', alpha=0.2, zorder=1)
+
 
     # Highlight B
     if pos == 'top_b':
