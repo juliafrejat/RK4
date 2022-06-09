@@ -39,14 +39,14 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 r = 0.03 + j*delta_r
 
                 # Particularidades para método
-                if ((1 <= i <= m-1) and (1 <= j <= n-1)):     # Particularidade cor: pontos no centro da matriz -> esse é o caso genérico
+                if ((1 <= i <= m-2) and (1 <= j <= n-1)):     # Particularidade cor: pontos no centro da matriz -> esse é o caso genérico
                     V_novo = (malha[i,j+1] + malha[i, j-1])/2 # Coloquei qualquer coisa: isso é uma média na linha
                     
                 elif (i == 0):                                # Particularidade cor: pontos na primeira linha
                     V_novo = malha[i+1, j]*r                  # Coloquei qualquer coisa: esse tem um fator de posição
 
                 elif ((i == m)):
-                    V_novo = malha[i-1, j]                    # Coloquei qualquer coisa
+                    V_novo = malha[i-1, j]*r                 # Coloquei qualquer coisa
                 
                 # Sobre-relaxação
                 malha[i, j] = tx_sobrerelaxacao*V_novo + (1-tx_sobrerelaxacao)*V_velho
@@ -67,10 +67,10 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
     ax.plot(np.linspace(0, np.deg2rad(40)), [0.11]*50, color='k',linewidth=1.3)
     
     # Contorno do material B
-    ax.plot([0]*50, np.linspace(0.05, 0.08), color='b')
-    ax.plot([np.deg2rad(18)]*50, np.linspace(0.05, 0.08), color='b')
-    ax.plot(np.linspace(0, np.deg2rad(18)), [0.05]*50, color='b')
-    ax.plot(np.linspace(0, np.deg2rad(18)), [0.08]*50, color='b',linewidth=1.3)
+    ax.plot([0]*50, np.linspace(0.05, 0.08), color='k')
+    ax.plot([np.deg2rad(18)]*50, np.linspace(0.05, 0.08), color='k')
+    ax.plot(np.linspace(0, np.deg2rad(18)), [0.05]*50, color='k')
+    ax.plot(np.linspace(0, np.deg2rad(18)), [0.08]*50, color='k',linewidth=1.3)
 
     # Parâmetros da grade
     r = np.arange(0.03, 0.12, delta_r)
@@ -111,4 +111,4 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
 
 malha = resolve_malha(delta_phi, delta_r, 1.5, 0.01)
 print(malha)
-plota_malha(delta_phi, delta_r, malha, linha_de_grade=True)
+plota_malha(delta_phi, delta_r, malha, linha_de_grade=False)

@@ -6,8 +6,8 @@ delta_phi = 2
 delta_r = 0.005
 
 # Highlight
-pos = 'general'
-cor = 'g'
+pos = 'top_b'
+cor = 'r'
 
 def plota_malha_aux(delta_phi, delta_r, pos, cor):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
@@ -36,11 +36,10 @@ def plota_malha_aux(delta_phi, delta_r, pos, cor):
         ax.plot(0, 0.05-delta_r, color=cor, markersize=10, marker=".")
         ax.plot(0, 0.08+delta_r, color=cor, markersize=10, marker=".")
         ax.plot(0, 0.11-delta_r, color=cor, markersize=10, marker=".")
-    if pos == 'left_a':
+    if pos == 'sides_a':
         ax.plot(np.linspace(0, np.deg2rad(40)), [0.03]*50, color=cor, linewidth=4)
         ax.plot(np.deg2rad(0), 0.03, color=cor, markersize=10, marker=".")
         ax.plot(np.deg2rad(40), 0.03, color=cor, markersize=10, marker=".")
-    if pos == 'right_a':
         ax.plot(np.linspace(0, np.deg2rad(40)), [0.11]*50, color=cor, linewidth=4)
         ax.plot(np.deg2rad(0), 0.11, color=cor, markersize=10, marker=".")
         ax.plot(np.deg2rad(40), 0.11, color=cor, markersize=10, marker=".")
@@ -64,15 +63,16 @@ def plota_malha_aux(delta_phi, delta_r, pos, cor):
         ax.plot([np.deg2rad(0)]*50, np.linspace(0.05+delta_r, 0.08-delta_r), color=cor, linewidth=4)
         ax.plot(np.deg2rad(0), 0.05+delta_r, color=cor, markersize=10, marker=".")
         ax.plot(np.deg2rad(0), 0.08-delta_r, color=cor, markersize=10, marker=".")
-    if pos == 'left_b':
+    if pos == 'sides_b':
         ax.plot(np.linspace(np.deg2rad(0+delta_phi), np.deg2rad(18-delta_phi)), [0.05]*50, color=cor, linewidth=2)
         ax.plot(np.deg2rad(0+delta_phi), 0.05, color=cor, markersize=5, marker=".")
         ax.plot(np.deg2rad(18-delta_phi), 0.05, color=cor, markersize=5, marker=".")
-    if pos == 'right_b':
         ax.plot(np.linspace(np.deg2rad(0+delta_phi), np.deg2rad(18-delta_phi)), [0.08]*50, color=cor, linewidth=2)
         ax.plot(np.deg2rad(0+delta_phi), 0.08, color=cor, markersize=5, marker=".")
         ax.plot(np.deg2rad(18-delta_phi), 0.08, color=cor, markersize=5, marker=".")
     if pos == 'corner_b':
+        ax.annotate("", xy=(np.deg2rad(0), 0.05), xytext=(np.deg2rad(2*delta_phi), 0.045), arrowprops=dict(arrowstyle="->"), color='orange')
+        ax.annotate("", xy=(np.deg2rad(0), 0.08), xytext=(np.deg2rad(2*delta_phi), 0.075), arrowprops=dict(arrowstyle="->"), color='orange')
         ax.plot(np.deg2rad(0), 0.05, color=cor, markersize=10, marker=".")
         ax.plot(np.deg2rad(0), 0.08, color=cor, markersize=10, marker=".")
 
@@ -97,6 +97,7 @@ def plota_malha_aux(delta_phi, delta_r, pos, cor):
     ax.grid(True)
 
     #ax.set_title("A line plot on a polar axis", va='bottom')
-    plt.show()
+    plt.savefig(f"{pos}.png", bbox_inches='tight', pad_inches = 0.1)
+    #plt.show()
 
 plota_malha_aux(delta_phi, delta_r, pos, cor)
