@@ -128,14 +128,18 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 if (j == 0):                      # Particularidade ciano na lateral esquerda
                     if (i == 0):                             # Particularidade ciano no ponto inferior esquerdo
                         q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
-                    if (i == m-1):                             # Particularidade ciano no ponto superior esquerdo
+                    elif (i == m-1):                             # Particularidade ciano no ponto superior esquerdo
                         q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i,j] + malha[i-1,j])/(r*delta_phi))**2)
+                    else:
+                        q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
 
-                if (j == n):                      # Particularidade ciano na lateral direita
+                elif (j == n):                      # Particularidade ciano na lateral direita
                     if (i == 0):                            # Particularidade ciano no ponto inferior direito
                         q_dot_novo = -sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
                     elif (i == m-1):                           # Particularidade ciano no ponto superior direito
                         q_dot_novo = -sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i,j] + malha[i-1,j])/(r*delta_phi))**2)  
+                    else:
+                        q_dot_novo = -sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
                 
                 # Sobre-relaxação
                 malha_q_dot[i,j] = tx_sobrerelaxacao*q_dot_novo + (1-tx_sobrerelaxacao)*q_dot_velho
