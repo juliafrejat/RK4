@@ -58,32 +58,48 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         ) * ((r**2*delta_r**2*delta_phi**2)/(2*r**2*delta_phi**2+2*delta_r**2))
 
                     elif (r == 0.05):                            # Particularidade laranja esquerdo: simetria e continuidade, material A à esquerda
-                        V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        + malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        + malha[i+1,j] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
+                        #V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
+                        #+ malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
+                        #+ malha[i+1,j] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
+                        #) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
+                        V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
+                        + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
+                        + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
+                        + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
 
                     elif (r == 0.08):                            # Particularidade laranja direito: simetria e continuidade, material B à esquerda
-                        V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        + malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        + malha[i+1,j] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
-                
+                        #V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
+                        #+ malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
+                        #+ malha[i+1,j] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
+                        #) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
+                        V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
+                        + malha[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
+                        + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
+                        + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
+
                 elif (i == m-1):                                # Particularidade azul: pontos com condição de contorno de Neumann
                     V_novo = ((malha[i,j-1] + malha[i,j+1]) * (1/(delta_r**2) - 1/(2*r*delta_r))
                     + malha[i-1,j] * (2/(r**2*delta_phi**2))) * ((delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2))
 
                 elif ((r == 0.05) and ((phi > 0) and (phi < 18))):     # Particularidade amarela esquerda: continuidade, material A à esquerda
-                    V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        + malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
+                    #V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
+                    #    + malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
+                    #    + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
+                    #    ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
+                    V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
+                    + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
+                    + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
+                    + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
                 
                 elif ((r == 0.08) and ((phi > 0) and (phi < 18))):                              # Particularidade amarela direita: continuidade, material B à esquerda
-                    V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        + malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
+                    #V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
+                    #    + malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
+                    #    + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
+                    #    ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
+                    V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
+                    + malha[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
+                    + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
+                    + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
                 elif ((phi == 18) and ((r > 0.05) and (r < 0.08))):   # Particularidade vermelha: continuidade, material A acima
                     V_novo = (malha[i,j-1] * ((-delta_phi*r**3 + 1)/(2*r*delta_r))
