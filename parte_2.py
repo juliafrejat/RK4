@@ -29,12 +29,10 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
     # Variável que mede a diferença dos valores de V para checar a tolerância de convergência
     maior_diferenca = 0
-    maior_diferenca_q_ponto = 0
 
-    while (((maior_diferenca > tolerancia) or maior_diferenca == 0) and ((maior_diferenca_q_ponto > tolerancia) or maior_diferenca_q_ponto == 0)):
+    while ((maior_diferenca > tolerancia) or maior_diferenca == 0):
 
         maior_diferenca = 0 
-        maior_diferenca_q_ponto = 0
 
         # Método de Liebmann
         for i in list(range(0, m)):       
@@ -146,8 +144,8 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 if abs(malha[i, j] - V_velho) > maior_diferenca:  # Potencial
                     maior_diferenca = abs(malha[i, j] - V_velho)
 
-                if abs(malha_q_dot[i, j] - q_dot_velho) > maior_diferenca_q_ponto:  # Potência elétrica
-                    maior_diferenca_q_ponto = abs(malha_q_dot[i, j] - q_dot_velho)
+                if abs(malha_q_dot[i, j] - q_dot_velho) > maior_diferenca:  # Potência elétrica
+                    maior_diferenca = abs(malha_q_dot[i, j] - q_dot_velho)
     return malha_q_dot
 
 def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
