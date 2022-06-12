@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 # Discretização
 # delta_phi = 10
 # delta_r = 0.01
-delta_phi = 2
-delta_r = 0.01
+delta_phi = 0.05
+delta_r = 0.005
 
 sigma_A = 5*10**(-6)
 sigma_B = 10**(-5)
@@ -27,8 +27,8 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
     # Variável que mede a diferença dos valores de V para checar a tolerância de convergência
     maior_diferenca = 0
 
-    #while ((maior_diferenca > tolerancia) or maior_diferenca == 0):
-    for i in range(1):  
+    while ((maior_diferenca > tolerancia) or maior_diferenca == 0):
+
         maior_diferenca = 0 
 
         # Método de Liebmann
@@ -58,20 +58,12 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         ) * ((r**2*delta_r**2*delta_phi**2)/(2*r**2*delta_phi**2+2*delta_r**2))
 
                     elif (r == 0.05):                            # Particularidade laranja esquerdo: simetria e continuidade, material A à esquerda
-                        #V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        #+ malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        #+ malha[i+1,j] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        #) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
                         V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
                         + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
                         + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
                         + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
 
                     elif (r == 0.08):                            # Particularidade laranja direito: simetria e continuidade, material B à esquerda
-                        #V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                        #+ malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                        #+ malha[i+1,j] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (2*sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                        #) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
                         V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
                         + malha[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
                         + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
@@ -82,31 +74,22 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                     + malha[i-1,j] * (2/(r**2*delta_phi**2))) * ((delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2))
 
                 elif ((r == 0.05) and ((phi > 0) and (phi < 18))):     # Particularidade amarela esquerda: continuidade, material A à esquerda
-                    #V_novo = (malha[i,j-1] * ((-2*sigma_A*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                    #    + malha[i,j+1] * ((2*sigma_B*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                    #    + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_A*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_B*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                    #    ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_A*r*delta_r)/(2*r+delta_r) - (sigma_B*r*delta_r)/(-2*r+delta_r))**(-1)
                     V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
                     + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
                     + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
                     + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
                 
-                elif ((r == 0.08) and ((phi > 0) and (phi < 18))):                              # Particularidade amarela direita: continuidade, material B à esquerda
-                    #V_novo = (malha[i,j-1] * ((-2*sigma_B*r*delta_r)/((2*r+delta_r)*delta_r**2))
-                    #    + malha[i,j+1] * ((2*sigma_A*r*delta_r)/((-2*r+delta_r)*delta_r**2))
-                    #    + (malha[i-1,j] + malha[i+1,j]) * ((-sigma_B*r*delta_r)/((2*r+delta_r)*r**2*delta_phi**2) + (sigma_A*r*delta_r)/((-2*r+delta_r)*r**2*delta_phi**2))
-                    #    ) * (2/(delta_r**2) + 2/(r**2*delta_phi**2))**(-1) * ((sigma_B*r*delta_r)/(2*r+delta_r) - (sigma_A*r*delta_r)/(-2*r+delta_r))**(-1)
+                elif ((r == 0.08) and ((phi > 0) and (phi < 18))):    # Particularidade amarela direita: continuidade, material B à esquerda
                     V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
                     + malha[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
                     + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
                     + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
                 elif ((phi == 18) and ((r > 0.05) and (r < 0.08))):   # Particularidade vermelha: continuidade, material A acima
-                    V_novo = (malha[i,j-1] * ((-delta_phi*r**3 + 1)/(2*r*delta_r))
-                    + malha[i,j+1] * ((-delta_phi*r**3 - 1)/(2*r*delta_r)) 
-                    + malha[i-1,j] * ((-sigma_B)/(sigma_A+sigma_B))
-                    + malha[i+1,j] * ((-sigma_A)/(sigma_A+sigma_B))
-                    ) * ((delta_r**2)/(delta_r**2 - r**2*delta_phi))
+                    V_novo = (malha[i,j-1] * (-delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**(2*sigma_A+sigma_B)*r**2)
+                    + malha[i,j+1] * (delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*(delta_phi**2*sigma_A+sigma_B)*r**2)
+                    + malha[i-1,j] * (4*delta_r**2*sigma_B)
+                    + malha[i+1,j] * (4*delta_r**2*sigma_A)) * (4*(sigma_A+sigma_B)*(delta_phi**2*r**2 + delta_r**2))
 
                 else:  # Caso genérico
                     V_novo = (malha[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
@@ -121,24 +104,22 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 # Checagem da convergência
                 if abs(malha[i, j] - V_velho) > maior_diferenca:
                     maior_diferenca = abs(malha[i, j] - V_velho)
-    print(malha)
-    input()
     return malha
 
 def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
 
     # Contorno do material A
-    ax.plot([0]*50, np.linspace(0.03, 0.11), color='k')
+    #ax.plot([0]*50, np.linspace(0.03, 0.11), color='k')
     ax.plot([np.deg2rad(40)]*50, np.linspace(0.03, 0.11), color='k')
     ax.plot(np.linspace(0, np.deg2rad(40)), [0.03]*50, color='k')
     ax.plot(np.linspace(0, np.deg2rad(40)), [0.11]*50, color='k',linewidth=1.3)
     
     # Contorno do material B
-    ax.plot([0]*50, np.linspace(0.05, 0.08), color='k')
-    ax.plot([np.deg2rad(18)]*50, np.linspace(0.05, 0.08), color='k')
-    ax.plot(np.linspace(0, np.deg2rad(18)), [0.05]*50, color='k')
-    ax.plot(np.linspace(0, np.deg2rad(18)), [0.08]*50, color='k',linewidth=1.3)
+    # ax.plot([0]*50, np.linspace(0.05, 0.08), color='k')
+    # ax.plot([np.deg2rad(18)]*50, np.linspace(0.05, 0.08), color='k')
+    # ax.plot(np.linspace(0, np.deg2rad(18)), [0.05]*50, color='k')
+    # ax.plot(np.linspace(0, np.deg2rad(18)), [0.08]*50, color='k',linewidth=1.3)
 
     # Parâmetros da grade
     r = np.arange(0.03, 0.12, delta_r)
@@ -155,14 +136,16 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
 
     # Plotagem dos valores da malha
     r = np.linspace(0.03, 0.11, int(0.08/delta_r) + 1)
-    p = np.linspace(np.deg2rad(40), 0, int(40/delta_phi) + 1)
+    p = np.linspace(0, np.deg2rad(40), int(40/delta_phi) + 1)
     R, P = np.meshgrid(r, p)
-
-    cp = ax.contourf(P, R, malha)
+    pl = np.linspace(0, np.deg2rad(-40), int(40/delta_phi) + 1)
+    R, PL = np.meshgrid(r, pl)
+    cp = ax.contourf(P, R, malha, np.linspace(0, 100, 10))
+    cp = ax.contourf(PL, R, malha, np.linspace(0, 100, 10))
     fig.colorbar(cp)
 
     # Limites do gráfico
-    ax.set_thetamin(0)
+    ax.set_thetamin(-40)
     ax.set_thetamax(40)
     ax.set_rmax(0.11)
 
@@ -177,5 +160,5 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
     #ax.set_title("A line plot on a polar axis", va='bottom')
     plt.show()
 
-malha = resolve_malha(delta_phi, delta_r, 1.5, 0.01)
+malha = resolve_malha(delta_phi, delta_r, 1.5, 0.001)
 plota_malha(delta_phi, delta_r, malha, linha_de_grade=False)
