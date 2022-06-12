@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 # Discretização
 # delta_phi = 10
 # delta_r = 0.01
-delta_phi = 0.05
+delta_phi = 1
 delta_r = 0.005
 
 sigma_A = 5*10**(-6)
@@ -131,8 +131,11 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
         ax.set_thetagrids(theta)
         ax.grid(True)
     if (not linha_de_grade):
-        ax.set_rticks([]) 
-        ax.set_thetagrids([])
+        #ax.set_xticklabels([])
+        #ax.set_yticklabels([])
+        #ax.set_rticks([]) 
+        #ax.set_thetagrids([])
+        ax.grid(True)
 
     # Plotagem dos valores da malha
     r = np.linspace(0.03, 0.11, int(0.08/delta_r) + 1)
@@ -153,10 +156,6 @@ def plota_malha(delta_phi, delta_r, malha, linha_de_grade=True):
     ax.set_rmin(0.03)
     ax.set_rorigin(-0.03)
 
-    # Remover labels 
-    ax.set_xticklabels([])
-    ax.set_yticklabels([])
-    
     #ax.set_title("A line plot on a polar axis", va='bottom')
     plt.show()
 
