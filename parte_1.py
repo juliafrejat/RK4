@@ -63,7 +63,7 @@ def solve_q(H, titles):
 
             # Atualiza vetor de legendas com escalas
             if order:
-                labels[j] += " $x 10^{" + str(order) + "}$"
+                labels[j] += " x $10^{" + str(order) + "}$"
         # Multiplicação dos vetores pelas escalas
         vars *= scales[:, None]
 
@@ -97,13 +97,11 @@ la = 0.1
 ra = 2000
 
 # Atualiza escolha dos valores de h 
-H = [0.01, 0.0001, 0.000001]
+H = [0.0001]
 
 # Título para plotagem do gráfico
-titles = ["Obtenção dos parâmetros $i_1$, $i_2$, $q$, $i_1'$, $i_2'$ com passo h = "]*3
+titles = ["Obtenção dos parâmetros $i_1$, $i_2$, $q$, $i_1'$, $i_2'$ com passo h = "]
 titles[0] += str(H[0])
-titles[1] += str(H[1])
-titles[2] += str(H[2])
 
 # Chamada da função que resolve a questão
 solve_q(H, titles)
