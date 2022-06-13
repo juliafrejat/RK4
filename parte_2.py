@@ -12,6 +12,8 @@ sigma_A = 5*10**(6)
 sigma_B = 10**(5)
 k_A = 110
 k_B = 500
+h = 50
+T_amb = 25
 
 def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
@@ -21,11 +23,15 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
     # Matriz que representa a malha inicializada com zeros 
     malha = np.zeros((m, n)) # Potenciais
-    malha_q_dot = np.zeros((m, n))
+    malha_q_dot = np.zeros((m, n)) # Potências elétricas
+    malha_T = np.zeros((m, n)) # Temperaturas
 
     # V conhecido nas bordas esquerda e direita do material A (particularidade azul)
     malha[:, 0] = 100
     malha[:, n-1] = 0
+
+    # T conhecido na borda esquerda do material A (particularidade azul)
+    malha_T[:, 0] = 30
 
     # Variável que mede a diferença dos valores de V para checar a tolerância de convergência
     maior_diferenca = 0
@@ -44,6 +50,9 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 # Potência elétrica na iteração anterior
                 q_dot_velho = malha_q_dot[i,j]
 
+                # Temperatura na iteração anterior
+                T_velho = malha_T[i,j]
+
                 # Valor do raio e do ângulo phi na iteração j
                 phi = i*delta_phi
                 r = 0.03 + j*delta_r
@@ -59,6 +68,11 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
                             q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
 
+                            T_novo = (malha_T[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
+                            + malha_T[i,j+1] * (1/(delta_r**2) + 1/(2*r*delta_r))
+                            + 2*malha_T[i+1, j] * (1/(r**2*delta_phi**2)) 
+                            + q_dot_novo)*(delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2)
+
                         elif ((r > 0.05) and (r < 0.08)):      # Particularidades magenta: simetria
                             V_novo = (malha[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
                             + malha[i,j+1] * (1/(delta_r**2) + 1/(2*r*delta_r))
@@ -67,13 +81,26 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
                             q_dot_novo = -sigma_B * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
 
+                            T_novo = (malha_T[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
+                            + malha_T[i,j+1] * (1/(delta_r**2) + 1/(2*r*delta_r))
+                            + 2*malha_T[i+1, j] * (1/(r**2*delta_phi**2)) 
+                            + q_dot_novo)*(delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2)
+
                         elif (r == 0.05):                            # Particularidade laranja esquerdo: simetria e continuidade, material A à esquerda
                             V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
                             + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
                             + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
                             + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
 
-                            q_dot_novo = -sigma_B * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
+                            q_dot_novo = (-sigma_B * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2) 
+                            - sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2))/2
+
+                            T_novo = (malha_T[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
+                            + malha_T[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
+                            + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
+                            + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r)
+                            + delta_phi**2*delta_r**3*q_dot_novo*sigma_A*r**2 - delta_phi**2*delta_r**3*q_dot_novo*sigma_B*r**2
+                            - 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_A*r**3 - 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_B*r**3)/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
 
                         elif (r == 0.08):                            # Particularidade laranja direito: simetria e continuidade, material B à esquerda
                             V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
@@ -81,7 +108,15 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                             + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
                             + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
-                            q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2)
+                            q_dot_novo = (-sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2) 
+                            - sigma_B * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j])/(r*delta_phi))**2))/2
+
+                            T_novo = (malha_T[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
+                            + malha_T[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
+                            + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
+                            + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r)
+                            + delta_phi**2*delta_r**3*q_dot_novo*sigma_A*r**2 - delta_phi**2*delta_r**3*q_dot_novo*sigma_B*r**2
+                            + 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_A*r**3 + 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_B*r**3)/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
                     elif (i == m-1):                                # Particularidade azul: pontos com condição de contorno de Neumann
                         V_novo = ((malha[i,j-1] + malha[i,j+1]) * (1/(delta_r**2) - 1/(2*r*delta_r))
@@ -89,13 +124,25 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
                         q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i,j] + malha[i-1,j])/(r*delta_phi))**2)
 
+                        T_novo = ((malha_T[i,j-1] + malha_T[i,j+1]) * (1/(delta_r**2) - 1/(2*r*delta_r))
+                        + malha_T[i-1,j] * (2/(r**2*delta_phi**2))
+                        + q_dot_novo) * ((delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2))
+
                     elif ((r == 0.05) and ((phi > 0) and (phi < 18))):     # Particularidade amarela esquerda: continuidade, material A à esquerda
                         V_novo = (malha[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
                         + malha[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
                         + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
                         + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
 
-                        q_dot_novo = -sigma_B * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        q_dot_novo = (-sigma_B * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        - sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2))/2
+
+                        T_novo = (malha_T[i,j-1]*(2*delta_phi**2*delta_r*sigma_A*r**2 - 4*delta_phi**2*sigma_A*r**3) 
+                        + malha_T[i,j+1]*(-2*delta_phi**2*delta_r*sigma_B*r**2 - 4*delta_phi**2*sigma_B*r**3) 
+                        + malha_T[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r) 
+                        + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B - 2*delta_r**2*sigma_A*r - 2*delta_r**2*sigma_B*r)
+                        + delta_phi**2*delta_r**3*q_dot_novo*sigma_A*r**2 - delta_phi**2*delta_r**3*q_dot_novo*sigma_B*r**2
+                        - 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_A*r**3 - 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_B*r**3)/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B-2*sigma_A*r-2*sigma_B*r))
                     
                     elif ((r == 0.08) and ((phi > 0) and (phi < 18))):    # Particularidade amarela direita: continuidade, material B à esquerda
                         V_novo = (malha[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
@@ -103,7 +150,15 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         + malha[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
                         + malha[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r))/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
-                        q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        q_dot_novo = (-sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        - sigma_B * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2))/2
+
+                        T_novo = (malha_T[i,j-1]*(-2*delta_phi**2*delta_r*sigma_A*r**2 + 4*delta_phi**2*sigma_A*r**3) 
+                        + malha_T[i,j+1]*(2*delta_phi**2*delta_r*sigma_B*r**2 + 4*delta_phi**2*sigma_B*r**3) 
+                        + malha_T[i-1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r) 
+                        + malha_T[i+1,j]*(delta_r**3*sigma_A - delta_r**3*sigma_B + 2*delta_r**2*sigma_A*r + 2*delta_r**2*sigma_B*r)
+                        + delta_phi**2*delta_r**3*q_dot_novo*sigma_A*r**2 - delta_phi**2*delta_r**3*q_dot_novo*sigma_B*r**2
+                        + 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_A*r**3 + 2*delta_phi**2*delta_r**2*q_dot_novo*sigma_B*r**3)/(2*(delta_phi**2*r**2 + delta_r**2)*(delta_r*sigma_A-delta_r*sigma_B+2*sigma_A*r+2*sigma_B*r))
 
                     elif ((phi == 18) and ((r > 0.05) and (r < 0.08))):   # Particularidade vermelha: continuidade, material A acima
                         V_novo = (malha[i,j-1] * (-delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**2*(sigma_A+sigma_B)*r**2)
@@ -111,7 +166,14 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         + malha[i-1,j] * (4*delta_r**2*sigma_B)
                         + malha[i+1,j] * (4*delta_r**2*sigma_A)) / (4*(sigma_A+sigma_B)*(delta_phi**2*r**2 + delta_r**2))
                         
-                        q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i,j])/(r*delta_phi))**2)
+                        q_dot_novo = (-sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i,j])/(r*delta_phi))**2)
+                        - sigma_B * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i,j] + malha[i-1,j])/(r*delta_phi))**2))/2
+
+                        T_novo = (malha_T[i,j-1] * (-delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**2*(sigma_A+sigma_B)*r**2)
+                        + malha_T[i,j+1] * (delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**2*(sigma_A+sigma_B)*r**2)
+                        + malha_T[i-1,j] * (4*delta_r**2*sigma_B)
+                        + malha_T[i+1,j] * (4*delta_r**2*sigma_A)
+                        + 2*delta_phi**2+delta_r**2+q_dot_novo*sigma_A*r**2 + 2*delta_phi**2+delta_r**2+q_dot_novo*sigma_B*r**2) / (4*(sigma_A+sigma_B)*(delta_phi**2*r**2 + delta_r**2))
 
                     else:  # Caso genérico
                         V_novo = (malha[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
@@ -124,6 +186,12 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                             q_dot_novo = -sigma_B * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
                         else:
                             q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+
+                        T_novo = (malha_T[i,j-1] * (1/(delta_r**2) - 1/(2*r*delta_r))
+                        + malha_T[i,j+1] * (1/(delta_r**2) + 1/(2*r*delta_r)) 
+                        + malha_T[i-1,j] * (1/(r**2*delta_phi**2))
+                        + malha_T[i+1, j] * (1/(r**2*delta_phi**2)) 
+                        + q_dot_novo)*(delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2)
 
                     # Sobre-relaxação
                     malha[i, j] = tx_sobrerelaxacao*V_novo + (1-tx_sobrerelaxacao)*V_velho
@@ -143,9 +211,15 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         q_dot_novo = -sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i,j] + malha[i-1,j])/(r*delta_phi))**2)  
                     else:
                         q_dot_novo = -sigma_A * (((malha[i,j] + malha[i,j-1])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                    
+                    T_novo = h * (malha[i,j] - T_amb)             # Convecção
                 
                 # Sobre-relaxação
                 malha_q_dot[i,j] = tx_sobrerelaxacao*q_dot_novo + (1-tx_sobrerelaxacao)*q_dot_velho
+
+                if (j != 0):
+                    malha_T[i, j] = tx_sobrerelaxacao*T_novo + (1-tx_sobrerelaxacao)*T_velho
+                    print(malha_T)
 
                 # Checagem da convergência
                 if abs(malha[i, j] - V_velho) > maior_diferenca:  # Potencial
@@ -153,7 +227,10 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
 
                 #if abs(malha_q_dot[i, j] - q_dot_velho) > maior_diferenca:  # Potência elétrica
                     #maior_diferenca = abs(malha_q_dot[i, j] - q_dot_velho)
-    return malha, malha_q_dot
+
+                #if abs(malha_T[i, j] - T_velho) > maior_diferenca:  # Temperatura
+                #    maior_diferenca = abs(malha_T[i, j] - T_velho)
+    return malha, malha_q_dot, malha_T
 
 
 def plota_malha(delta_phi, delta_r, malha, linha_de_grade=False):
@@ -262,9 +339,10 @@ def plota_malha_q_ponto(delta_phi, delta_r, malha, linha_de_grade=False):
     #ax.set_title("A line plot on a polar axis", va='bottom')
     plt.show()
 
-malha, malha_q_ponto = resolve_malha(delta_phi, delta_r, 1.5, 0.001)
+malha, malha_q_ponto, malha_T = resolve_malha(delta_phi, delta_r, 1.5, 0.001)
 plota_malha(delta_phi, delta_r, malha)
 plota_malha_q_ponto(delta_phi, delta_r, malha_q_ponto)
+plota_malha_q_ponto(delta_phi, delta_r, malha_T)
 
 
 def plot_malha(delta_phi, delta_r, malha):
@@ -286,3 +364,4 @@ def plot_malha(delta_phi, delta_r, malha):
     plt.show()
 
 plot_malha(delta_phi, delta_r, malha)
+plot_malha(delta_phi, delta_r, malha_T)
