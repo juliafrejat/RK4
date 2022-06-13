@@ -120,7 +120,10 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         + malha[i+1, j] * (1/(r**2*delta_phi**2))
                         )*(delta_r**2*delta_phi**2*r**2)/(2*r**2*delta_phi**2+2*delta_r**2)
 
-                        q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        if ((phi < 18) and (phi > 0) and ((r > 0.05) and (r < 0.08))):
+                            q_dot_novo = -sigma_B * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
+                        else:
+                            q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
 
                     # Sobre-relaxação
                     malha[i, j] = tx_sobrerelaxacao*V_novo + (1-tx_sobrerelaxacao)*V_velho
