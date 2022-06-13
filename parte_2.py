@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 delta_phi = 2
 delta_r = 0.01
 
-sigma_A = 5*10**(-6)
-sigma_B = 10**(-5)
+sigma_A = 5*10**(6)
+sigma_B = 10**(5)
 k_A = 110
 k_B = 500
 
@@ -106,11 +106,10 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                         q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j])/(delta_r))**2 + ((malha[i+1,j] + malha[i-1,j])/(2*r*delta_phi))**2)
 
                     elif ((phi == 18) and ((r > 0.05) and (r < 0.08))):   # Particularidade vermelha: continuidade, material A acima
-                        V_novo = (malha[i,j-1] * (-delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**(2*sigma_A+sigma_B)*r**2)
-                        + malha[i,j+1] * (delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*(delta_phi**2*sigma_A+sigma_B)*r**2)
+                        V_novo = (malha[i,j-1] * (-delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**2*(sigma_A+sigma_B)*r**2)
+                        + malha[i,j+1] * (delta_phi**2*delta_r*(sigma_A+sigma_B)*r + 2*delta_phi**2*(sigma_A+sigma_B)*r**2)
                         + malha[i-1,j] * (4*delta_r**2*sigma_B)
-                        + malha[i+1,j] * (4*delta_r**2*sigma_A)) * (4*(sigma_A+sigma_B)*(delta_phi**2*r**2 + delta_r**2))
-                        #V_novo = (malha[i,j-1]+malha[i,j+1]+malha[i+1,j]+malha[i-1,j])/4
+                        + malha[i+1,j] * (4*delta_r**2*sigma_A)) / (4*(sigma_A+sigma_B)*(delta_phi**2*r**2 + delta_r**2))
                         
                         q_dot_novo = -sigma_A * (((malha[i,j+1] + malha[i,j-1])/(2*delta_r))**2 + ((malha[i+1,j] + malha[i,j])/(r*delta_phi))**2)
 
@@ -149,9 +148,10 @@ def resolve_malha(delta_phi, delta_r, tx_sobrerelaxacao, tolerancia):
                 if abs(malha[i, j] - V_velho) > maior_diferenca:  # Potencial
                     maior_diferenca = abs(malha[i, j] - V_velho)
 
-                if abs(malha_q_dot[i, j] - q_dot_velho) > maior_diferenca:  # Potência elétrica
-                    maior_diferenca = abs(malha_q_dot[i, j] - q_dot_velho)
+                #if abs(malha_q_dot[i, j] - q_dot_velho) > maior_diferenca:  # Potência elétrica
+                    #maior_diferenca = abs(malha_q_dot[i, j] - q_dot_velho)
     return malha, malha_q_dot
+
 
 def plota_malha(delta_phi, delta_r, malha, linha_de_grade=False):
     fig, ax = plt.subplots(subplot_kw={'projection': 'polar'})
@@ -243,8 +243,8 @@ def plota_malha_q_ponto(delta_phi, delta_r, malha, linha_de_grade=False):
     R, P = np.meshgrid(r, p)
     pl = np.linspace(0, np.deg2rad(-40), int(40/delta_phi) + 1)
     R, PL = np.meshgrid(r, pl)
-    cp = ax.contourf(P, R, malha, np.linspace(-1600, 0, 100))
-    cp = ax.contourf(PL, R, malha, np.linspace(-1600, 0, 100))
+    cp = ax.contourf(P, R, malha)
+    cp = ax.contourf(PL, R, malha)
     fig.colorbar(cp)
 
     # Limites do gráfico
@@ -281,3 +281,5 @@ def plot_malha(delta_phi, delta_r, malha):
     ax.plot_surface(X, Y, malha, cmap=plt.cm.YlGnBu_r)
 
     plt.show()
+
+plot_malha(delta_phi, delta_r, malha)
